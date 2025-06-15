@@ -1,0 +1,747 @@
+1.Cart.tsx
+  import React from 'react';
+import { X, Plus, Minus, ShoppingBag, Trash2 } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+
+const Cart: React.FC = () => {
+  const { state, closeCart, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
+
+  if (!state.isOpen) return null;
+
+  const handleCheckout = () => {
+    alert('Checkout functionality would be implemented here!');
+    closeCart();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-50">
+      <div className="bg-white w-full max-w-md h-full overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-slate-200 p-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-slate-800 flex items-center space-x-2">
+            <ShoppingBag className="h-5 w-5" />
+            <span>Shopping Cart</span>
+          </h2>
+          <button
+            onClick={closeCart}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+          >
+            <X className="h-6 w-6 text-slate-600" />
+          </button>
+        </div>
+
+        {/* Cart Items */}
+        <div className="p-4">
+          {state.items.length === 0 ? (
+            <div className="text-center py-16">
+              <ShoppingBag className="mx-auto h-16 w-16 text-slate-300 mb-4" />
+              <h3 className="text-lg font-medium text-slate-900 mb-2">Your cart is empty</h3>
+              <p className="text-slate-600 mb-6">Start shopping to add items to your cart.</p>
+              <button
+                onClick={closeCart}
+                className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors duration-200"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4 mb-6">
+                {state.items.map((item) => (
+                  <div key={item.product.id} className="flex space-x-4 p-4 bg-slate-50 rounded-lg">
+                    <img
+                      src={item.product.image}
+                      alt={item.product.name}
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-slate-900 text-sm line-clamp-2">
+                        {item.product.name}
+                      </h4>
+                      <p className="text-sm text-slate-600">${item.product.price.toFixed(2)}</p>
+                      
+                      {/* Quantity Controls */}
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center border border-slate-300 rounded-md">
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            className="p-1 hover:bg-slate-100 transition-colors duration-200"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="px-3 py-1 text-sm font-medium">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            className="p-1 hover:bg-slate-100 transition-colors duration-200"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                        
+                        <button
+                          onClick={() => removeItem(item.product.id)}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Clear Cart */}
+              <button
+                onClick={clearCart}
+                className="w-full text-sm text-red-600 hover:text-red-700 mb-4 underline"
+              >
+                Clear Cart
+              </button>
+
+              {/* Total and Checkout */}
+              <div className="space-y-4 pt-4 border-t border-slate-200">
+                <div className="flex justify-between items-center text-lg font-semibold">
+                  <span>Total:</span>
+                  <span>${getTotalPrice().toFixed(2)}</span>
+                </div>
+                
+                <button
+                  onClick={handleCheckout}
+                  className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-emerald-700 transition-colors duration-200"
+                >
+                  Proceed to Checkout
+                </button>
+                
+                <button
+                  onClick={closeCart}
+                  className="w-full border border-slate-300 text-slate-700 py-2 px-4 rounded-lg font-medium hover:border-slate-400 transition-colors duration-200"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Cart;
+
+2.CategoryFilter.tsx
+import React from 'react';
+import { Category } from '../types';
+
+interface CategoryFilterProps {
+  categories: Category[];
+  selectedCategory: string;
+  onCategoryChange: (categoryId: string) => void;
+}
+
+const CategoryFilter: React.FC<CategoryFilterProps> = ({
+  categories,
+  selectedCategory,
+  onCategoryChange,
+}) => {
+  return (
+    <div className="mb-8">
+      <h3 className="text-lg font-semibold text-slate-900 mb-4">Categories</h3>
+      <div className="flex flex-wrap gap-2">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => onCategoryChange(category.id)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              selectedCategory === category.id
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            {category.name}
+            <span className="ml-2 text-xs opacity-75">({category.count})</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default CategoryFilter;
+3.FeatuedProducts.tsx
+import React from 'react';
+import { Star, ArrowRight } from 'lucide-react';
+import { Product } from '../types';
+import { useCart } from '../context/CartContext';
+
+interface FeaturedProductsProps {
+  products: Product[];
+  onProductClick: (product: Product) => void;
+}
+
+const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, onProductClick }) => {
+  const { addItem } = useCart();
+  const featuredProducts = products.filter(product => product.featured).slice(0, 3);
+
+  return (
+    <section className="py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+            Featured Products
+          </h2>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Discover our handpicked selection of premium products, chosen for their exceptional quality and value.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {featuredProducts.map((product, index) => (
+            <div
+              key={product.id}
+              className={`group cursor-pointer ${
+                index === 1 ? 'lg:scale-105 lg:shadow-xl' : ''
+              }`}
+              onClick={() => onProductClick(product)}
+            >
+              <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-100">
+                <div className="relative">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  
+                  {product.sale && (
+                    <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                      Sale
+                    </div>
+                  )}
+
+                  <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    Featured
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <div className="text-xs text-emerald-600 font-medium uppercase tracking-wide">
+                    {product.category}
+                  </div>
+
+                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors duration-200">
+                    {product.name}
+                  </h3>
+
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < Math.floor(product.rating)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-slate-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-slate-600">
+                      {product.rating} ({product.reviews})
+                    </span>
+                  </div>
+
+                  <p className="text-slate-600 text-sm line-clamp-2">
+                    {product.description}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl font-bold text-slate-900">
+                        ${product.price.toFixed(2)}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-sm text-slate-500 line-through">
+                          ${product.originalPrice.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem(product);
+                    }}
+                    className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-emerald-700 transition-all duration-200 flex items-center justify-center space-x-2 group"
+                  >
+                    <span>Add to Cart</span>
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <button className="bg-slate-100 text-slate-700 px-8 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors duration-200 inline-flex items-center space-x-2">
+            <span>View All Products</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default FeaturedProducts;
+4.Footer.tsx
+import React from 'react';
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+
+const Footer: React.FC = () => {
+  const footerLinks = {
+    'Company': [
+      { name: 'About Us', href: '#' },
+      { name: 'Careers', href: '#' },
+      { name: 'Press', href: '#' },
+      { name: 'Blog', href: '#' },
+    ],
+    'Customer Service': [
+      { name: 'Help Center', href: '#' },
+      { name: 'Contact Us', href: '#' },
+      { name: 'Shipping Info', href: '#' },
+      { name: 'Returns', href: '#' },
+    ],
+    'Policies': [
+      { name: 'Privacy Policy', href: '#' },
+      { name: 'Terms of Service', href: '#' },
+      { name: 'Cookie Policy', href: '#' },
+      { name: 'Refund Policy', href: '#' },
+    ],
+  };
+
+  const socialLinks = [
+    { name: 'Facebook', icon: Facebook, href: '#' },
+    { name: 'Twitter', icon: Twitter, href: '#' },
+    { name: 'Instagram', icon: Instagram, href: '#' },
+    { name: 'YouTube', icon: Youtube, href: '#' },
+  ];
+
+  return (
+    <footer className="bg-slate-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-2xl font-bold">
+                Shop<span className="text-emerald-400">Flow</span>
+              </h3>
+              <p className="text-slate-300 mt-2">
+                Your premier destination for quality products and exceptional shopping experience.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 text-slate-300">
+                <Mail className="h-5 w-5 text-emerald-400" />
+                <span>support@shopflow.com</span>
+              </div>
+              <div className="flex items-center space-x-3 text-slate-300">
+                <Phone className="h-5 w-5 text-emerald-400" />
+                <span>+1 (555) 123-4567</span>
+              </div>
+              <div className="flex items-center space-x-3 text-slate-300">
+                <MapPin className="h-5 w-5 text-emerald-400" />
+                <span>123 Commerce St, City, State 12345</span>
+              </div>
+            </div>
+
+            <div className="flex space-x-4">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  className="p-2 bg-slate-800 hover:bg-emerald-600 rounded-lg transition-colors duration-200"
+                  aria-label={social.name}
+                >
+                  <social.icon className="h-5 w-5" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer Links */}
+          {Object.entries(footerLinks).map(([category, links]) => (
+            <div key={category}>
+              <h4 className="text-lg font-semibold mb-6">{category}</h4>
+              <ul className="space-y-3">
+                {links.map((link) => (
+                  <li key={link.name}>
+                    <a
+                      href={link.href}
+                      className="text-slate-300 hover:text-emerald-400 transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Newsletter Signup */}
+        <div className="border-t border-slate-800 mt-12 pt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h4 className="text-xl font-semibold mb-2">Stay Updated</h4>
+              <p className="text-slate-300">
+                Subscribe to our newsletter for the latest products, deals, and updates.
+              </p>
+            </div>
+            <div className="flex space-x-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-white placeholder-slate-400"
+              />
+              <button className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-colors duration-200">
+                Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="border-t border-slate-800 mt-12 pt-8 text-center text-slate-400">
+          <p>&copy; 2024 ShopFlow. All rights reserved. Built with ❤️ for amazing shopping experiences.</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
+5.Header.tsx
+import React, { useState } from 'react';
+import { Search, ShoppingCart, User, Menu, X } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+
+interface HeaderProps {
+  onSearch: (query: string) => void;
+  searchQuery: string;
+}
+
+const Header: React.FC<HeaderProps> = ({ onSearch, searchQuery }) => {
+  const { getTotalItems, toggleCart } = useCart();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onSearch(e.target.value);
+  };
+
+  const navigation = [
+    { name: 'Home', href: '#' },
+    { name: 'Products', href: '#products' },
+    { name: 'Categories', href: '#categories' },
+    { name: 'About', href: '#' },
+    { name: 'Contact', href: '#' },
+  ];
+
+  return (
+    <>
+      <header className="bg-white shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center">
+              <h1 className="text-2xl font-bold text-slate-800">
+                Shop<span className="text-emerald-600">Flow</span>
+              </h1>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-8">
+              {navigation.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="text-slate-700 hover:text-emerald-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+                >
+                  {item.name}
+                </a>
+              ))}
+            </nav>
+
+            {/* Search Bar */}
+            <div className="flex-1 max-w-lg mx-8 hidden lg:block">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            {/* Right Icons */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowAuth(!showAuth)}
+                className="p-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              >
+                <User className="h-6 w-6" />
+              </button>
+              
+              <button
+                onClick={toggleCart}
+                className="relative p-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              >
+                <ShoppingCart className="h-6 w-6" />
+                {getTotalItems() > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {getTotalItems()}
+                  </span>
+                )}
+              </button>
+
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="md:hidden p-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              >
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Search */}
+          <div className="lg:hidden pb-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-slate-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-slate-200 bg-white">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navigation.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="block px-3 py-2 text-base font-medium text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-md transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Auth Modal */}
+      {showAuth && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-slate-800">Sign In</h2>
+              <button
+                onClick={() => setShowAuth(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Enter your password"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 transition-colors duration-200 font-medium"
+              >
+                Sign In
+              </button>
+              <p className="text-center text-sm text-slate-600">
+                Don't have an account?{' '}
+                <button className="text-emerald-600 hover:text-emerald-700 font-medium">
+                  Sign up
+                </button>
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default Header;
+5.Productcard.tsx
+import React from 'react';
+import { Star, ShoppingCart, Heart } from 'lucide-react';
+import { Product } from '../types';
+import { useCart } from '../context/CartContext';
+
+interface ProductCardProps {
+  product: Product;
+  onProductClick: (product: Product) => void;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) => {
+  const { addItem } = useCart();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addItem(product);
+  };
+
+  const discount = product.originalPrice 
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : null;
+
+  return (
+    <div 
+      className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-slate-100"
+      onClick={() => onProductClick(product)}
+    >
+      {/* Image Container */}
+      <div className="relative overflow-hidden">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        
+        {/* Sale Badge */}
+        {product.sale && discount && (
+          <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
+            -{discount}%
+          </div>
+        )}
+
+        {/* Featured Badge */}
+        {product.featured && !product.sale && (
+          <div className="absolute top-3 left-3 bg-emerald-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
+            Featured
+          </div>
+        )}
+
+        {/* Out of Stock Overlay */}
+        {!product.inStock && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <span className="bg-white text-slate-900 px-3 py-1 rounded-md font-semibold text-sm">
+              Out of Stock
+            </span>
+          </div>
+        )}
+
+        {/* Quick Actions */}
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 space-y-2">
+          <button className="bg-white p-2 rounded-full shadow-md hover:bg-slate-50 transition-colors duration-200">
+            <Heart className="h-4 w-4 text-slate-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 space-y-3">
+        {/* Category */}
+        <div className="text-xs text-emerald-600 font-medium uppercase tracking-wide">
+          {product.category}
+        </div>
+
+        {/* Title */}
+        <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-emerald-600 transition-colors duration-200">
+          {product.name}
+        </h3>
+
+        {/* Rating */}
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`h-4 w-4 ${
+                  i < Math.floor(product.rating)
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-slate-300'
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-sm text-slate-600">
+            {product.rating} ({product.reviews})
+          </span>
+        </div>
+
+        {/* Price */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-lg font-bold text-slate-900">
+              ${product.price.toFixed(2)}
+            </span>
+            {product.originalPrice && (
+              <span className="text-sm text-slate-500 line-through">
+                ${product.originalPrice.toFixed(2)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Add to Cart Button */}
+        <button
+          onClick={handleAddToCart}
+          disabled={!product.inStock}
+          className={`w-full flex items-center justify-center space-x-2 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+            product.inStock
+              ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-98'
+              : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+          }`}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          <span>{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;
